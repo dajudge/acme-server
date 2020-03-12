@@ -1,0 +1,36 @@
+subprojects {
+    buildscript {
+        repositories {
+            mavenCentral()
+            gradlePluginPortal()
+        }
+    }
+
+    apply plugin: "java"
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation enforcedPlatform("io.quarkus:quarkus-universe-bom:1.2.1.Final")
+    }
+
+    test {
+        testLogging {
+            showStandardStreams = true
+        }
+    }
+
+    group 'com.dajudge.acme'
+    version '1.0.0-SNAPSHOT'
+
+    compileJava {
+        options.compilerArgs << '-parameters'
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}

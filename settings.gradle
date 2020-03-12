@@ -1,0 +1,9 @@
+rootProject.name='parent'
+
+include rootDir.listFiles().findAll {
+    it.isDirectory() &&
+            !['.','..'].contains(it) &&
+            file("$it.absolutePath/build.gradle").exists()
+}.collect {
+    it.getName()
+}.toArray(new java.lang.String[0])

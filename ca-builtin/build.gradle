@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(":ca-api")
+    implementation "jakarta.enterprise:jakarta.enterprise.cdi-api"
+    implementation 'org.bouncycastle:bcpkix-jdk15on:1.64'
+}

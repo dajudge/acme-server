@@ -1,0 +1,17 @@
+plugins {
+    id 'io.quarkus' version "1.2.1.Final"
+}
+
+dependencies {
+    implementation 'org.bitbucket.b_c:jose4j:0.7.0'
+    implementation 'io.quarkus:quarkus-jdbc-h2'
+    implementation 'io.quarkus:quarkus-flyway'
+    implementation 'io.quarkus:quarkus-jackson'
+    implementation 'io.quarkus:quarkus-resteasy'
+    implementation 'io.quarkus:quarkus-resteasy-jsonb'
+    implementation 'org.projectlombok:lombok:1.18.12'
+    implementation project(":ca-api")
+    runtimeOnly project(":ca-builtin")
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+}
