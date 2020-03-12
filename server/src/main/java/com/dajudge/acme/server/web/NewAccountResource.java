@@ -16,7 +16,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.UUID;
 
 @Path(NewAccountResource.BASE_PATH)
 public class NewAccountResource {
@@ -49,7 +48,6 @@ public class NewAccountResource {
         );
         return Response.created(accountUri(account))
                 .entity(response)
-                .header("Replay-Nonce", UUID.randomUUID().toString())
                 .build();
     }
 

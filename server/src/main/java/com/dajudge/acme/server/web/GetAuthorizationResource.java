@@ -17,7 +17,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.UUID;
 
 import static java.util.Locale.US;
 import static java.util.stream.Collectors.toList;
@@ -64,7 +63,6 @@ public class GetAuthorizationResource {
                 challenges);
         LOG.info("Get authorization response: {}", response);
         return Response.ok(response)
-                .header("Replay-Nonce", UUID.randomUUID())
                 .build();
     }
 

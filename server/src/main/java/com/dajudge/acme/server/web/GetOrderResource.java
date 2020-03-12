@@ -13,7 +13,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.util.UUID;
 
 @Path(GetOrderResource.BASE_PATH)
 public class GetOrderResource {
@@ -43,7 +42,6 @@ public class GetOrderResource {
         final OrderTO order = orderFacade.getOrder(accountId, orderId);
         LOG.info("Returning order: {}", order);
         return Response.ok(orderMapper.toRest(order))
-                .header("Replay-Nonce", UUID.randomUUID())
                 .build();
     }
 }

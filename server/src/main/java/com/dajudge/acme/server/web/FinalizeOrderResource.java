@@ -2,9 +2,9 @@ package com.dajudge.acme.server.web;
 
 import com.dajudge.acme.server.facade.OrderFacade;
 import com.dajudge.acme.server.transport.OrderTO;
+import com.dajudge.acme.server.web.mapper.OrderMapper;
 import com.dajudge.acme.server.web.transport.FinalizeOrderRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
-import com.dajudge.acme.server.web.mapper.OrderMapper;
 import com.dajudge.acme.server.web.util.PathBuilder;
 import org.jose4j.base64url.Base64Url;
 
@@ -14,7 +14,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.util.UUID;
 
 @Path(FinalizeOrderResource.BASE_PATH)
 public class FinalizeOrderResource {
@@ -45,7 +44,6 @@ public class FinalizeOrderResource {
         final OrderTO order = orderFacade.finalizeOrder(orderId, Base64Url.decode(csr));
         return Response.ok(orderMapper.toRest(order))
                 .location(pathBuilder.orderUrl(order.getId()))
-                .header("Replay-Nonce", UUID.randomUUID())
                 .build();
     }
 }

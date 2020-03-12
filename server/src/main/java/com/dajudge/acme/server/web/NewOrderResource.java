@@ -17,7 +17,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
 
@@ -51,7 +50,6 @@ public class NewOrderResource {
         LOG.info("Created order: {}", order);
         return Response.created(pathBuilder.orderUrl(order.getId()))
                 .entity(orderMapper.toRest(order))
-                .header("Replay-Nonce", UUID.randomUUID())
                 .build();
     }
 

@@ -16,7 +16,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 
 import static java.util.Locale.US;
 
@@ -54,7 +53,6 @@ public class CheckChallengeResource {
                 formatDateNullSafe(status.getChallenge().getValidated())
         );
         return Response.ok(response)
-                .header("Replay-Nonce", UUID.randomUUID())
                 .header("Link", "<" + pathBuilder.authUrl(status.getAuthorizationId()) + ">;rel=\"up\"")
                 .build();
     }

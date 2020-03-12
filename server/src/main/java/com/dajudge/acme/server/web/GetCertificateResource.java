@@ -10,11 +10,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
 @Path(GetCertificateResource.BASE_PATH)
@@ -42,7 +39,6 @@ public class GetCertificateResource {
                 .map(cert -> PREFIX + "\n" + cert + "\n" + SUFFIX)
                 .collect(joining("\n"));
         return Response.ok(chain.getBytes(UTF_8))
-                .header("Replay-Nonce", UUID.randomUUID())
                 .build();
     }
 }
