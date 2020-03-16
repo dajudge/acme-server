@@ -19,11 +19,13 @@ package com.dajudge.acme.server.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Account {
     private String id;
     private List<String> contact;
     private List<Order> orders = new ArrayList<Order>();
+    private Map<String, Object> publicKey;
 
     public String getId() {
         return id;
@@ -43,5 +45,13 @@ public class Account {
 
     public List<Order> getOrders() {
         return orders;
+    }
+
+    public Map<String, Object> getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(final Map<String, Object> publicKey) {
+        this.publicKey = publicKey;
     }
 }

@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import java.security.KeyPair;
 
+import static com.dajudge.acme.server.util.StringUtils.base64url;
 import static io.restassured.RestAssured.given;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.function.Function.identity;
@@ -86,12 +87,12 @@ class AcmeServer {
             final JSONObject jwsObject = new JSONObject();
             jws.sign();
             jws.setKey(keyPair.getPublic());
-            jwsObject.put("payload", Base64.encode(jws.getPayload().getBytes(UTF_8)));
+            jwsObject.put("payload", base64url(jws.getPayload().getBytes(UTF_8)));
             jwsObject.put("signature", jws.getEncodedSignature());
             final JSONObject headers = toJson(jws.getHeaders());
             headers.put("nonce", nextNonce);
             headers.put("url", url);
-            jwsObject.put("protected", Base64.encode(headers.toString().getBytes(UTF_8)));
+            jwsObject.put("protected", base64url(headers.toString().getBytes(UTF_8)));
             return jwsObject.toString();
         } catch (final JoseException e) {
             throw new RuntimeException("Failed to encapsulate message as JWS", e);

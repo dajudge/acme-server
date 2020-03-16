@@ -24,4 +24,8 @@ public class AppConfigAdapter {
     public String getServerBaseUrl() {
         return System.getenv("SERVER_BASE_URL");
     }
+
+    public int getHttpVerificationPort() {
+        return 80;
+    }
 }

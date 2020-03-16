@@ -24,6 +24,7 @@ import com.dajudge.acme.server.transport.AccountTO;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Dependent
@@ -35,11 +36,16 @@ public class AccountFacade {
         this.centralRepository = centralRepository;
     }
 
-    public AccountTO createAccount(final List<String> contact) {
+    public AccountTO createAccount(final List<String> contact, final Map<String, Object> publicKey) {
         final Account account = new Account();
         account.setId(UUID.randomUUID().toString());
         account.setContact(contact);
+        account.setPublicKey(publicKey);
         centralRepository.getAccounts().put(account.getId(), account);
-        return new AccountTO(account.getId(), account.getContact());
+        return new AccountTO(
+                account.getId(),
+                account.getContact(),
+                publicKey
+        );
     }
 }

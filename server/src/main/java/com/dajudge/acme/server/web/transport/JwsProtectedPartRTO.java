@@ -31,20 +31,20 @@ public class JwsProtectedPartRTO {
     private String url;
     private String kid;
 
-    public String getAlg() {
-        return alg;
-    }
-
-    public void setAlg(final String alg) {
-        this.alg = alg;
-    }
-
     public Map<String, Object> getJwk() {
         return jwk;
     }
 
     public void setJwk(final Map<String, Object> jwk) {
         this.jwk = jwk;
+    }
+
+    public String getAlg() {
+        return alg;
+    }
+
+    public void setAlg(final String alg) {
+        this.alg = alg;
     }
 
     public String getNonce() {

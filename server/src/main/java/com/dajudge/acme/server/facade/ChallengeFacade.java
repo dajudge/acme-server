@@ -23,7 +23,6 @@ import com.dajudge.acme.server.model.AuthorizationRequest;
 import com.dajudge.acme.server.model.Order;
 import com.dajudge.acme.server.repository.CentralRepository;
 import com.dajudge.acme.server.transport.ChallengeStatusCTO;
-import com.dajudge.acme.server.transport.ChallengeStatusEnum;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -53,7 +52,6 @@ public class ChallengeFacade {
                 .filter(it -> it.getId().equals(challengeId))
                 .findAny()
                 .get();
-        challenge.setStatus(ChallengeStatusEnum.VALID);
         challenge.setValidated(new Date());
         return new ChallengeStatusCTO(toTransportObject(challenge), request.getId());
     }

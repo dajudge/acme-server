@@ -56,7 +56,8 @@ public class NewAccountResource {
     public Response createAccount(final JwsRequestRTO<CreateAccountRequestRTO> request) {
         LOG.info("New account request: {}", request.getPayload());
         final AccountTO account = accountFacade.createAccount(
-                request.getPayload().getContact()
+                request.getPayload().getContact(),
+                request.getProtectedPart().getJwk()
         );
         final CreateAccountResponseRTO response = new CreateAccountResponseRTO(
                 "valid",

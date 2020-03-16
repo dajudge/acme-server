@@ -25,6 +25,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -75,4 +77,15 @@ public class TestContainers {
         return nginx;
     }
 
+    public String getNginxHostSuffix() {
+        try {
+            return InetAddress.getByName(nginx.getContainerIpAddress()).getHostAddress() + ".nip.io";
+        } catch (final UnknownHostException e) {
+            throw new RuntimeException("Failed to resolve IP of nginx container", e);
+        }
+    }
+
+    public int getNginxHttpPort() {
+        return nginx.getMappedPort(80);
+    }
 }

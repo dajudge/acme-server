@@ -15,24 +15,15 @@
  *
  */
 
-package com.dajudge.acme.server;
+package com.dajudge.acme.server.util;
 
-import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
+import org.jose4j.base64url.Base64Url;
 
-import javax.inject.Inject;
-import java.util.UUID;
+public final class StringUtils {
+    private StringUtils() {
+    }
 
-@QuarkusTest
-class CertbotIntegrationTest {
-    @Inject
-    private TestContainers testContainers;
-
-    @Test
-    public void happy_path_succeeds() {
-        testContainers.certbot().certonly(
-                UUID.randomUUID().toString() + "." + testContainers.getNginxHostSuffix(),
-                "mail@" + UUID.randomUUID() + ".example.com"
-        );
+    public static String base64url(final byte[] data) {
+        return Base64Url.encode(data);
     }
 }

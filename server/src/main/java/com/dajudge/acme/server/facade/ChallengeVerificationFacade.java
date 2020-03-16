@@ -15,5 +15,23 @@
  *
  */
 
+package com.dajudge.acme.server.facade;
 
-// quarkus test runtime freaks out without this
+import com.dajudge.acme.server.business.ChallengeVerifier;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
+public class ChallengeVerificationFacade {
+    private final ChallengeVerifier verifier;
+
+    @Inject
+    public ChallengeVerificationFacade(final ChallengeVerifier verifier) {
+        this.verifier = verifier;
+    }
+
+    public void verifyChallenges() {
+        verifier.verifyChallenges();
+    }
+}

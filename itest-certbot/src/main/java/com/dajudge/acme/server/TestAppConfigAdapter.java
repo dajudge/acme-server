@@ -15,9 +15,9 @@
  *
  */
 
-package com.dajudge.acme.server.adapter;
+package com.dajudge.acme.server;
 
-import com.dajudge.acme.server.TestContainers;
+import com.dajudge.acme.server.adapter.AppConfigAdapter;
 import io.quarkus.arc.AlternativePriority;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -34,6 +34,11 @@ public class TestAppConfigAdapter {
             @Override
             public String getServerBaseUrl() {
                 return testContainers.getAcmeServerBaseAddress();
+            }
+
+            @Override
+            public int getHttpVerificationPort() {
+                return testContainers.getNginxHttpPort();
             }
         };
     }

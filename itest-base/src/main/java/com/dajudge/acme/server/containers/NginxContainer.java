@@ -23,10 +23,12 @@ import com.github.dockerjava.api.model.Volume;
 import org.testcontainers.containers.GenericContainer;
 
 import static java.util.Collections.singletonList;
+import static org.testcontainers.shaded.com.google.common.primitives.Ints.asList;
 
 public class NginxContainer extends GenericContainer<NginxContainer> {
     public NginxContainer(final String volumeName) {
         super("nginx:1.17.8");
+        setExposedPorts(asList(80));
         setBinds(singletonList(new Bind(volumeName, new Volume("/usr/share/nginx/html"), AccessMode.ro)));
     }
 }

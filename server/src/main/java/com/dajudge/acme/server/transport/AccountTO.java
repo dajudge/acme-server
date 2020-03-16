@@ -21,16 +21,27 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.Map;
 
 @ToString
 @EqualsAndHashCode
 public class AccountTO {
     private final String id;
     private final List<String> contact;
+    private final Map<String, Object> publicKey;
 
-    public AccountTO(final String id, final List<String> contact) {
+    public AccountTO(
+            final String id,
+            final List<String> contact,
+            final Map<String, Object> publicKey
+    ) {
         this.id = id;
         this.contact = contact;
+        this.publicKey = publicKey;
+    }
+
+    public Map<String, Object> getPublicKey() {
+        return publicKey;
     }
 
     public List<String> getContact() {
