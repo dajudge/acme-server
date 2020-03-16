@@ -1,3 +1,11 @@
+plugins {
+    id "com.github.hierynomus.license" version "0.15.0" apply false
+}
+
+ext {
+    quarkusVersion = "1.2.1.Final"
+}
+
 subprojects {
     buildscript {
         repositories {
@@ -7,6 +15,7 @@ subprojects {
     }
 
     apply plugin: "java"
+
 
     repositories {
         mavenCentral()
@@ -32,5 +41,13 @@ subprojects {
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+allprojects {
+    apply plugin: 'com.github.hierynomus.license'
+
+    license {
+        header file("${project.rootDir}/HEADER")
     }
 }

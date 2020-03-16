@@ -1,0 +1,29 @@
+buildscript {
+    dependencies {
+        classpath "gradle.plugin.io.quarkus:quarkus-gradle-plugin:${quarkusVersion}"
+    }
+}
+
+import io.quarkus.gradle.tasks.QuarkusTestConfig
+import io.quarkus.gradle.QuarkusPluginExtension
+
+extensions.add("quarkus", new QuarkusPluginExtension(project))
+
+dependencies {
+    implementation 'io.quarkus:quarkus-resteasy'
+
+    testImplementation project(":itest-base")
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'io.quarkus:quarkus-junit5'
+}
+
+task quarkusTestConfig(type: QuarkusTestConfig) {
+    dependsOn classes
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(Test.class).forEach { it.dependsOn quarkusTestConfig }
+tasks.withType(Test.class).whenTaskAdded { it.dependsOn quarkusTestConfig }

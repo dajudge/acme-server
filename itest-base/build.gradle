@@ -1,0 +1,10 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(":server")
+
+    api 'io.quarkus:quarkus-resteasy'
+    api "org.testcontainers:testcontainers:1.12.5"
+}
