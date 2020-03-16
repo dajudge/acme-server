@@ -37,9 +37,6 @@ public class BuiltinCertificationAuthority implements CertificationAuthority {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     }
 
-    private static final String CSR_PREFIX = "-----BEGIN CERTIFICATE REQUEST-----";
-    private static final String CSR_SUFFIX = "-----END CERTIFICATE REQUEST-----";
-
     private static final AlgorithmIdentifier SIGNATURE_ALGORITHM = new DefaultSignatureAlgorithmIdentifierFinder()
             .find("SHA1withRSA");
     private static final AlgorithmIdentifier DIGEST_ALGORITHM = new DefaultDigestAlgorithmIdentifierFinder()

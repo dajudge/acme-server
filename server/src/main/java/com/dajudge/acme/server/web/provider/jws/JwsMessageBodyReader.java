@@ -1,12 +1,18 @@
 package com.dajudge.acme.server.web.provider.jws;
 
+import com.dajudge.acme.server.facade.NonceFacade;
+import com.dajudge.acme.server.web.exception.BadNonceException;
 import com.dajudge.acme.server.web.transport.JwsProtectedPartRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.jose4j.base64url.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -19,12 +25,16 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 @Provider
 public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
+    private static final Logger LOG = LoggerFactory.getLogger(JwsMessageBodyReader.class);
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper()
             .configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    @Inject
+    NonceFacade nonceFacade;
 
     @Override
     public boolean isReadable(
@@ -60,7 +70,6 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
             final ParameterizedType parameterizedType = (ParameterizedType) genericType;
             final Class<?> payloadClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
             final byte[] payloadBytes = IOUtils.toByteArray(entityStream);
-
             final JwsPayload jws = JSON_MAPPER.readValue(
                     payloadBytes,
                     JwsPayload.class
@@ -69,8 +78,9 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
                     Base64.decode(jws.getProtected()),
                     JwsProtectedPartRTO.class
             );
-            System.out.println(new String(payloadBytes, UTF_8));
-            System.out.println(new String(Base64.decode(jws.getProtected()), UTF_8));
+            if (!nonceFacade.validate(jwsProtectedPart.getNonce())) {
+                throw new BadNonceException(jwsProtectedPart.getNonce());
+            }
             if (payloadClass == Void.class) {
                 return createRequestObject(
                         jwsProtectedPart,
@@ -83,8 +93,8 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
                     Base64.decode(jws.getPayload()),
                     jws.getSignature()
             );
-        } catch (final JsonParseException e) {
-            throw new WebApplicationException("Failed to deserialize JWS request body", e);
+        } catch (final JsonParseException | JsonMappingException e) {
+            throw new WebApplicationException("Failed to deserialize JWS request body", e, BAD_REQUEST);
         }
     }
 

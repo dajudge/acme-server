@@ -11,7 +11,12 @@ dependencies {
     implementation 'io.quarkus:quarkus-resteasy-jsonb'
     implementation 'org.projectlombok:lombok:1.18.12'
     implementation project(":ca-api")
+
     runtimeOnly project(":ca-builtin")
 
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'io.quarkus:quarkus-junit5'
+    testImplementation 'org.json:json:20190722'
 }

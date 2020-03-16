@@ -15,7 +15,7 @@ import static java.util.Arrays.stream;
 @Provider
 public class NonceInterceptor implements WriterInterceptor {
     @Inject
-    private NonceFacade nonceFacade;
+    NonceFacade nonceFacade;
 
     @Override
     public void aroundWriteTo(final WriterInterceptorContext context) throws IOException, WebApplicationException {
@@ -26,6 +26,7 @@ public class NonceInterceptor implements WriterInterceptor {
     }
 
     private boolean isPostRequest(final WriterInterceptorContext context) {
-        return stream(context.getAnnotations()).anyMatch(it -> it.annotationType() == POST.class);
+        return context.getAnnotations() != null && stream(context.getAnnotations())
+                .anyMatch(it -> it.annotationType() == POST.class);
     }
 }

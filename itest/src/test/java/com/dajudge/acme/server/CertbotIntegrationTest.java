@@ -12,7 +12,7 @@ class CertbotIntegrationTest {
     private TestContainers testContainers;
 
     @Test
-    public void test2() {
+    public void happy_path_succeeds() {
         testContainers.certbot().certonly("www.example.com", "mail@" + UUID.randomUUID() + ".example.com");
     }
 }
