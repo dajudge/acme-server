@@ -21,18 +21,15 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import org.hamcrest.Matcher;
-import org.jose4j.base64url.Base64;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.Headers;
-import org.jose4j.keys.EcKeyUtil;
-import org.jose4j.keys.EllipticCurves;
 import org.jose4j.lang.JoseException;
 import org.json.JSONObject;
 
 import java.security.KeyPair;
 
-import static com.dajudge.acme.server.util.StringUtils.base64url;
+import static com.dajudge.acme.common.util.StringUtils.base64url;
 import static io.restassured.RestAssured.given;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.function.Function.identity;
@@ -41,44 +38,49 @@ import static org.hamcrest.Matchers.notNullValue;
 
 class AcmeServer {
     public String nextNonce = newNonce();
-    public KeyPair keyPair = generateKeyPair();
 
     public String newNonce() {
         return newNonce(any(String.class));
     }
 
     public String newNonce(final Matcher<String> matcher) {
+        final String newNonceUrl = newNonceUrl();
+        System.out.println(newNonceUrl);
         return given()
-                .head(newNonceUrl())
+                .head(newNonceUrl)
                 .then()
                 .header("Replay-Nonce", identity(), matcher)
                 .extract()
                 .header("Replay-Nonce");
     }
 
-    public JSONObject newAccount(final JSONObject body) {
-        final ValidatableResponse response = newAccountRequest(body);
-        final ExtractableResponse<Response> result = response
-                .statusCode(201)
-                .header("Location", notNullValue())
-                .header("Replay-Nonce", notNullValue())
-                .extract();
-        nextNonce = result.header("Replay-Nonce");
-        final JSONObject resultObject = new JSONObject(result.body().asString());
-        resultObject.put("_location", result.header("Location"));
+    public JSONObject newAccount(final KeyPair keyPair, final JSONObject body) {
+        return processResponse(
+                newAccountRequest(keyPair, body)
+                        .header("Location", notNullValue()),
+                201);
+    }
+
+    private JSONObject processResponse(final ValidatableResponse result, final int statusCode) {
+        result.statusCode(statusCode)
+                .header("Replay-Nonce", notNullValue());
+        final ExtractableResponse<Response> extract = result.extract();
+        nextNonce = extract.header("Replay-Nonce");
+        final JSONObject resultObject = new JSONObject(extract.body().asString());
+        resultObject.put("_location", extract.header("Location"));
         return resultObject;
     }
 
-    public ValidatableResponse newAccountRequest(final JSONObject body) {
+    public ValidatableResponse newAccountRequest(final KeyPair keyPair, final JSONObject body) {
         final String url = newAccountUrl();
         return given()
-                .body(jws(url, body.toString()))
+                .body(jws(keyPair, url, null, body.toString()))
                 .contentType("application/jose+json")
                 .post(url)
                 .then();
     }
 
-    private String jws(final String url, final String body) {
+    private String jws(final KeyPair keyPair, final String url, final String kid, final String body) {
         try {
             final JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(body);
@@ -90,6 +92,7 @@ class AcmeServer {
             jwsObject.put("payload", base64url(jws.getPayload().getBytes(UTF_8)));
             jwsObject.put("signature", jws.getEncodedSignature());
             final JSONObject headers = toJson(jws.getHeaders());
+            headers.put("kid", kid);
             headers.put("nonce", nextNonce);
             headers.put("url", url);
             jwsObject.put("protected", base64url(headers.toString().getBytes(UTF_8)));
@@ -119,11 +122,15 @@ class AcmeServer {
     }
 
 
-    public static KeyPair generateKeyPair() {
-        try {
-            return new EcKeyUtil().generateKeyPair(EllipticCurves.P256);
-        } catch (final JoseException e) {
-            throw new RuntimeException("Failed to generate key pair", e);
-        }
+    public ValidatableResponse getOrdersRequest(final KeyPair keyPair, final String kid, final String ordersUrl) {
+        return given()
+                .body(jws(keyPair, ordersUrl, kid, ""))
+                .contentType("application/jose+json")
+                .post(ordersUrl)
+                .then();
+    }
+
+    public JSONObject getOrders(final KeyPair keyPair, final String kid, final String ordersUrl) {
+        return processResponse(getOrdersRequest(keyPair, kid, ordersUrl), 200);
     }
 }

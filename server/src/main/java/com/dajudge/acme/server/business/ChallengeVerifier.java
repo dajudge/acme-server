@@ -17,59 +17,56 @@
 
 package com.dajudge.acme.server.business;
 
-import com.dajudge.acme.ca.Clock;
-import com.dajudge.acme.server.adapter.AppConfigAdapter;
+import com.dajudge.acme.challenge.ChallengeType;
+import com.dajudge.acme.common.Clock;
 import com.dajudge.acme.server.model.Account;
 import com.dajudge.acme.server.model.AuthorizationChallenge;
 import com.dajudge.acme.server.model.AuthorizationRequest;
 import com.dajudge.acme.server.model.Order;
 import com.dajudge.acme.server.repository.CentralRepository;
 import com.dajudge.acme.server.transport.ChallengeStatusEnum;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.jose4j.lang.JoseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import static com.dajudge.acme.server.transport.ChallengeStatusEnum.VALID;
-import static com.dajudge.acme.server.util.StringUtils.base64url;
 import static java.lang.String.format;
-import static java.time.Duration.ofSeconds;
+import static java.util.stream.Collectors.toMap;
 import static org.jose4j.jwk.JsonWebKey.Factory.newJwk;
 
 @Singleton
 public class ChallengeVerifier {
     private static final Logger LOG = LoggerFactory.getLogger(ChallengeVerifier.class);
 
-    private static final OkHttpClient HTTP = new OkHttpClient.Builder()
-            .connectTimeout(ofSeconds(3))
-            .readTimeout(ofSeconds(1))
-            .build();
     private final Clock clock;
     private final CentralRepository centralRepository;
-    private final AppConfigAdapter appConfigAdapter;
+    private final Map<String, ChallengeType> challenges;
 
     @Inject
     public ChallengeVerifier(
             final Clock clock,
             final CentralRepository centralRepository,
-            final AppConfigAdapter appConfigAdapter
+            final @Any Instance<ChallengeType> challenges
     ) {
         this.clock = clock;
         this.centralRepository = centralRepository;
-        this.appConfigAdapter = appConfigAdapter;
+        this.challenges = challenges.stream().collect(toMap(
+                it -> it.getIdentifierType() + "/" + it.getChallengeType(),
+                it -> it
+        ));
+        LOG.info("Available challenge types: {}", this.challenges.keySet());
     }
 
     public void verifyChallenges() {
-        centralRepository.getAccounts().values().forEach(account -> account.getOrders().stream()
+        centralRepository.getAccounts().forEach(account -> account.getOrders().stream()
                 .map(Order::getIdentifiers).flatMap(Collection::stream)
                 .forEach(request -> {
                     request.getChallenges().stream()
@@ -88,49 +85,15 @@ public class ChallengeVerifier {
             final AuthorizationRequest request,
             final AuthorizationChallenge challenge
     ) {
-        if (request.getType().equals("dns") && challenge.getType().equals("http-01")) {
-            return verifyHttpChallenge(account, request.getValue(), challenge);
-        } else {
+        final ChallengeType challengeType = challenges.get(request.getType() + "/" + challenge.getType());
+        if (challengeType == null) {
             throw new RuntimeException(format(
                     "Unknown request / challenge combination: %s/%s",
                     request.getType(),
                     challenge.getType()
             ));
         }
-    }
-
-    private boolean verifyHttpChallenge(
-            final Account account,
-            final String hostname,
-            final AuthorizationChallenge challenge
-    ) {
-        LOG.info("Validating HTTP DNS challenge for {}", hostname);
-        final String hostAndPort = hostname + ":" + appConfigAdapter.getHttpVerificationPort();
-        final Request request = new Request.Builder()
-                .url("http://" + hostAndPort + "/.well-known/acme-challenge/" + challenge.getToken())
-                .build();
-        final String expectedString = challenge.getToken() + "." + base64url(thumbprint(account));
-        try {
-            final Response response = HTTP.newCall(request).execute();
-            try (final ResponseBody body = response.body()) {
-                if (response.code() != 200) {
-                    LOG.info("{} returned status code {}", hostname, response.code());
-                    return false;
-                }
-                final String actualString = body.string();
-                if (!expectedString.equals(actualString)) {
-                    LOG.info("{} returned wrong value: {} instead of {}", hostname, actualString, expectedString);
-                    return false;
-                }
-                LOG.info("HTTP DNS challenge successful for {}", hostname);
-                return true;
-            }
-        } catch (final IOException e) {
-            throw new RuntimeException(format(
-                    "Failed to verify HTTP DNS challenge for %s",
-                    hostname
-            ), e);
-        }
+        return challengeType.verifyChallenge(request.getValue(), challenge.getToken(), thumbprint(account));
     }
 
     private byte[] thumbprint(final Account account) {

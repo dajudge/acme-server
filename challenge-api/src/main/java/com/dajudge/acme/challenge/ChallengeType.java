@@ -15,8 +15,16 @@
  *
  */
 
-package com.dajudge.acme.ca;
+package com.dajudge.acme.challenge;
 
-public interface Clock {
-    long now();
+public interface ChallengeType {
+    String getIdentifierType();
+
+    String getChallengeType();
+
+    boolean verifyChallenge(
+            final String identifierValue,
+            final String token,
+            final byte[] accountKeyThumbprint
+    );
 }

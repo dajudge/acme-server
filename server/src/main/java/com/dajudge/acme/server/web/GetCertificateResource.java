@@ -28,6 +28,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 
@@ -35,7 +36,7 @@ import static java.util.stream.Collectors.joining;
 public class GetCertificateResource {
     private final String PREFIX = "-----BEGIN CERTIFICATE-----";
     private final String SUFFIX = "-----END CERTIFICATE-----";
-    public static final String BASE_PATH = "/acmev2/cert/{orderId}";
+    public static final String BASE_PATH = ACMEV2_PREFIX + "/cert/{orderId}";
     private final OrderFacade orderFacade;
 
     @Inject

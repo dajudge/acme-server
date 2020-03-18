@@ -55,16 +55,22 @@ public class OrderFacade {
 
     public OrderTO createOrder(final String accountId, final List<AuthorizationRequestTO> orderIdentifiers) {
         final Order order = createOrderWithRequests(orderIdentifiers);
-        centralRepository.getAccounts().get(accountId).getOrders().add(order);
+        centralRepository.getAccounts()
+                .stream()
+                .filter(it -> it.getId().equals(accountId))
+                .findAny()
+                .orElseThrow(() -> new RuntimeException("Unknown account: " + accountId)) // TODO proper error
+                .getOrders()
+                .add(order);
         return OrderMapper.toTransportObject(order);
     }
 
     public OrderTO finalizeOrder(final String orderId, final byte[] csr) {
-        final Order order = centralRepository.getAccounts().values().stream()
+        final Order order = centralRepository.getAccounts().stream()
                 .map(Account::getOrders).flatMap(Collection::stream)
                 .filter(it -> orderId.equals(it.getId()))
                 .findAny()
-                .orElseThrow(() -> new RuntimeException("No such order: " + orderId));
+                .orElseThrow(() -> new RuntimeException("Unknown order: " + orderId));
         order.setStatus(OrderStatusEnum.VALID);
         order.setCertificateChain(certificationAuthorityRegistry.createCertificate(csr));
         return OrderMapper.toTransportObject(order);
@@ -96,12 +102,20 @@ public class OrderFacade {
     }
 
     public OrderTO getOrder(final String accountId, final String orderId) {
-        return OrderMapper.toTransportObject(centralRepository.getAccounts()
-                .get(accountId)
-                .getOrders()
+        return listOrders(accountId)
                 .stream()
                 .filter(it -> it.getId().equals(orderId))
                 .findFirst()
-                .get());
+                .orElseThrow(() -> new RuntimeException("Unknown order: " + orderId)); // TODO proper error handling
+    }
+
+    public List<OrderTO> listOrders(final String accountId) {
+        final List<Order> orders = centralRepository.getAccounts()
+                .stream()
+                .filter(it -> accountId.equals(it.getId()))
+                .findAny()
+                .orElseThrow(() -> new RuntimeException("Unknown account: " + accountId)) // TODO proper error handling
+                .getOrders();
+        return OrderMapper.toTransportObjects(orders);
     }
 }

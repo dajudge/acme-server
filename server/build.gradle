@@ -9,10 +9,12 @@ dependencies {
     implementation 'io.quarkus:quarkus-resteasy-jsonb'
     implementation 'io.quarkus:quarkus-scheduler'
     implementation 'org.projectlombok:lombok:1.18.12'
-    implementation 'com.squareup.okhttp3:okhttp:4.4.1'
     implementation project(":ca-api")
+    implementation project(":common-api")
+    implementation project(":challenge-api")
 
     runtimeOnly project(":ca-builtin")
+    runtimeOnly project(":challenge-http")
 
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
 

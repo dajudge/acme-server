@@ -34,13 +34,14 @@ import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
 import static java.util.Locale.US;
 
 @Path(CheckChallengeResource.BASE_PATH)
 public class CheckChallengeResource {
     private static final Logger LOG = LoggerFactory.getLogger(CheckChallengeResource.class);
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-    public static final String BASE_PATH = "/acmev2/challenges/{challengeId}";
+    public static final String BASE_PATH = ACMEV2_PREFIX + "/challenges/{challengeId}";
 
     private final PathBuilder pathBuilder;
     private final ChallengeFacade challengeFacade;

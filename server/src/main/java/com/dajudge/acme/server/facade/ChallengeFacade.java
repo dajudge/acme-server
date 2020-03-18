@@ -42,7 +42,7 @@ public class ChallengeFacade {
     }
 
     public ChallengeStatusCTO getChallengeStatus(final String challengeId) {
-        final AuthorizationRequest request = centralRepository.getAccounts().values().stream()
+        final AuthorizationRequest request = centralRepository.getAccounts().stream()
                 .map(Account::getOrders).flatMap(Collection::stream)
                 .map(Order::getIdentifiers).flatMap(Collection::stream)
                 .filter(hasChallengeWithId(challengeId))

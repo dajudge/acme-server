@@ -27,15 +27,17 @@ public class JwsRequestRTO<T> {
     private final JwsProtectedPartRTO protectedPart;
     private final T payload;
     private final String signature;
+    private final String accountId;
 
     public JwsRequestRTO(
             final JwsProtectedPartRTO protectedPart,
             final T payload,
-            final String signature
-    ) {
+            final String signature,
+            final String accountId) {
         this.protectedPart = protectedPart;
         this.payload = payload;
         this.signature = signature;
+        this.accountId = accountId;
     }
 
     public T getPayload() {
@@ -46,12 +48,17 @@ public class JwsRequestRTO<T> {
         return protectedPart;
     }
 
+    public String getAccountId() {
+        return accountId;
+    }
+
     public static <T> JwsRequestRTO<T> create(
             final JwsProtectedPartRTO protectedPart,
             final Class<T> payloadClass,
             final T payload,
-            final String signature
+            final String signature,
+            final String accountId
     ) {
-        return new JwsRequestRTO<>(protectedPart, payload, signature);
+        return new JwsRequestRTO<>(protectedPart, payload, signature, accountId);
     }
 }

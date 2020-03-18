@@ -18,12 +18,12 @@
 package com.dajudge.acme.server.web;
 
 import com.dajudge.acme.server.facade.AuthorizationFacade;
-import com.dajudge.acme.server.facade.ConfigFacade;
 import com.dajudge.acme.server.transport.AuthorizationStatusCTO;
 import com.dajudge.acme.server.web.transport.AuthorizationChallengeRTO;
 import com.dajudge.acme.server.web.transport.GetAuthorizationResponseRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
 import com.dajudge.acme.server.web.transport.OrderRequestIdentifierRTO;
+import com.dajudge.acme.server.web.util.PathBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,24 +35,25 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
+import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
 import static java.util.Locale.US;
 import static java.util.stream.Collectors.toList;
 
 @Path(GetAuthorizationResource.BASE_PATH)
 public class GetAuthorizationResource {
     private static final Logger LOG = LoggerFactory.getLogger(GetAuthorizationResource.class);
-    public static final String BASE_PATH = "/acmev2/authz/{authId}";
+    public static final String BASE_PATH = ACMEV2_PREFIX + "/authz/{authId}";
 
-    private final ConfigFacade configFacade;
     private final AuthorizationFacade authorizationFacade;
+    private final PathBuilder pathBuilder;
 
     @Inject
     public GetAuthorizationResource(
-            final ConfigFacade configFacade,
-            final AuthorizationFacade authorizationFacade
+            final AuthorizationFacade authorizationFacade,
+            final PathBuilder pathBuilder
     ) {
-        this.configFacade = configFacade;
         this.authorizationFacade = authorizationFacade;
+        this.pathBuilder = pathBuilder;
     }
 
     @POST
@@ -67,7 +68,7 @@ public class GetAuthorizationResource {
         final List<AuthorizationChallengeRTO> challenges = status.getAuthorization().getChallenges().stream()
                 .map(challenge -> new AuthorizationChallengeRTO(
                         challenge.getType(),
-                        challengeUrl(challenge.getId()),
+                        pathBuilder.challengeUrl(challenge.getId()).toString(),
                         challenge.getToken()
                 ))
                 .collect(toList());
@@ -81,9 +82,5 @@ public class GetAuthorizationResource {
         LOG.info("Get authorization response: {}", response);
         return Response.ok(response)
                 .build();
-    }
-
-    private String challengeUrl(final String challengeId) {
-        return configFacade.getServerBaseUrl() + CheckChallengeResource.BASE_PATH.replace("{challengeId}", challengeId);
     }
 }

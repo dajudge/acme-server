@@ -32,9 +32,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
+
 @Path(FinalizeOrderResource.BASE_PATH)
 public class FinalizeOrderResource {
-    public static final String BASE_PATH = "/acmev2/orders/{orderId}/finalize";
+    public static final String BASE_PATH = ACMEV2_PREFIX + "/orders/{orderId}/finalize";
 
     private final OrderMapper orderMapper;
     private final OrderFacade orderFacade;

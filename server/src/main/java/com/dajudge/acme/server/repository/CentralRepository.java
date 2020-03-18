@@ -20,14 +20,14 @@ package com.dajudge.acme.server.repository;
 import com.dajudge.acme.server.model.Account;
 
 import javax.inject.Singleton;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Singleton
 public class CentralRepository {
-    private final Map<String, Account> accounts = new HashMap<>();
+    private final List<Account> accounts = new ArrayList<>();
 
-    public Map<String, Account> getAccounts() {
+    public List<Account> getAccounts() {
         return accounts;
     }
 }

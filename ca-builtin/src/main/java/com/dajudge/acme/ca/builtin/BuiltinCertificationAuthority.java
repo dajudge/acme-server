@@ -18,8 +18,7 @@
 package com.dajudge.acme.ca.builtin;
 
 import com.dajudge.acme.ca.CertificationAuthority;
-import com.dajudge.acme.ca.Clock;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import com.dajudge.acme.common.Clock;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Certificate;
@@ -27,7 +26,6 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
-import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;

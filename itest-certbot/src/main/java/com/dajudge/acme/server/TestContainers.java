@@ -17,14 +17,18 @@
 
 package com.dajudge.acme.server;
 
+import com.dajudge.acme.challenge.http.HttpDnsChallengeType;
 import com.dajudge.acme.server.containers.CertbotContainer;
 import com.dajudge.acme.server.containers.NginxContainer;
-import org.jetbrains.annotations.NotNull;
+import com.dajudge.acme.server.web.util.PathBuilder;
+import io.quarkus.arc.AlternativePriority;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
@@ -61,8 +65,7 @@ public class TestContainers {
         return getAcmeServerBaseAddress() + "/directory";
     }
 
-    @NotNull
-    public String getAcmeServerBaseAddress() {
+    private String getAcmeServerBaseAddress() {
         final String gatewayAddress = certbot.getContainerInfo().getNetworkSettings()
                 .getNetworks().get("bridge")
                 .getGateway();
@@ -85,7 +88,17 @@ public class TestContainers {
         }
     }
 
-    public int getNginxHttpPort() {
-        return nginx.getMappedPort(80);
+    @Produces
+    @AlternativePriority(1)
+    @Singleton
+    public HttpDnsChallengeType.Config getHttpDnsChallengeConfig() {
+        return () -> nginx.getMappedPort(80);
+    }
+
+    @Produces
+    @AlternativePriority(1)
+    @Singleton
+    public PathBuilder.Config getPathBuilderConfig() {
+        return () -> getAcmeServerBaseAddress();
     }
 }

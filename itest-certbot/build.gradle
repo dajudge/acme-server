@@ -11,6 +11,7 @@ extensions.add("quarkus", new QuarkusPluginExtension(project))
 
 dependencies {
     implementation project(":itest-base")
+    implementation project(":challenge-http")
     implementation 'io.quarkus:quarkus-resteasy'
     implementation 'io.quarkus:quarkus-scheduler'
 

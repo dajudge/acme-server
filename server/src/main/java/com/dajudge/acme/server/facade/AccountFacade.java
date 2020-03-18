@@ -17,6 +17,7 @@
 
 package com.dajudge.acme.server.facade;
 
+import com.dajudge.acme.server.facade.mapper.AccountMapper;
 import com.dajudge.acme.server.model.Account;
 import com.dajudge.acme.server.repository.CentralRepository;
 import com.dajudge.acme.server.transport.AccountTO;
@@ -26,6 +27,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Dependent
 public class AccountFacade {
@@ -36,16 +38,16 @@ public class AccountFacade {
         this.centralRepository = centralRepository;
     }
 
-    public AccountTO createAccount(final List<String> contact, final Map<String, Object> publicKey) {
+    public AccountTO createAccount(
+            final List<String> contact,
+            final Map<String, Object> publicKey
+    ) {
         final Account account = new Account();
         account.setId(UUID.randomUUID().toString());
         account.setContact(contact);
         account.setPublicKey(publicKey);
-        centralRepository.getAccounts().put(account.getId(), account);
-        return new AccountTO(
-                account.getId(),
-                account.getContact(),
-                publicKey
-        );
+        centralRepository.getAccounts().add(account);
+        return AccountMapper.toTransportObject(account);
     }
+
 }

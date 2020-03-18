@@ -35,12 +35,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
+import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
 import static java.util.stream.Collectors.toList;
 
 @Path(NewOrderResource.BASE_PATH)
 public class NewOrderResource {
     private static final Logger LOG = LoggerFactory.getLogger(NewOrderResource.class);
-    static final String BASE_PATH = "/acmev2/orders";
+    static final String BASE_PATH = ACMEV2_PREFIX + "/orders";
 
     private final OrderMapper orderMapper;
     private final OrderFacade orderFacade;
@@ -61,9 +62,10 @@ public class NewOrderResource {
     @Produces("application/json")
     public Response createOrder(final JwsRequestRTO<CreateOrderRequestRTO> request) {
         LOG.info("New order request: {}", request.getPayload());
-        final String kid = request.getProtectedPart().getKid();
-        final String accountId = kid.substring(kid.lastIndexOf("/") + 1);
-        final OrderTO order = orderFacade.createOrder(accountId, toIdentifierTOs(request.getPayload().getIdentifiers()));
+        final OrderTO order = orderFacade.createOrder(
+                request.getAccountId(),
+                toIdentifierTOs(request.getPayload().getIdentifiers())
+        );
         LOG.info("Created order: {}", order);
         return Response.created(pathBuilder.orderUrl(order.getId()))
                 .entity(orderMapper.toRest(order))

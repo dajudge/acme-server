@@ -39,7 +39,7 @@ public class AuthorizationFacade {
     }
 
     public AuthorizationStatusCTO getAuthorizationById(final String authId) {
-        final AuthorizationRequest authorizationRequest = centralRepository.getAccounts().values().stream()
+        final AuthorizationRequest authorizationRequest = centralRepository.getAccounts().stream()
                 .map(Account::getOrders)
                 .flatMap(Collection::stream)
                 .map(Order::getIdentifiers)

@@ -15,7 +15,7 @@
  *
  */
 
-package com.dajudge.acme.server.util;
+package com.dajudge.acme.common.util;
 
 import org.jose4j.base64url.Base64Url;
 

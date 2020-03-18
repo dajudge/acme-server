@@ -23,12 +23,13 @@ import javax.inject.Inject;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
-import java.util.UUID;
+
+import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
 
 
 @Path(NewNonceResource.BASE_PATH)
 public class NewNonceResource {
-    static final String BASE_PATH = "/acmev2/nonce";
+    static final String BASE_PATH = ACMEV2_PREFIX + "/nonce";
 
     private final NonceFacade nonceFacade;
 

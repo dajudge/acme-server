@@ -20,6 +20,10 @@ package com.dajudge.acme.server.facade.mapper;
 import com.dajudge.acme.server.model.Order;
 import com.dajudge.acme.server.transport.OrderTO;
 
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+
 public class OrderMapper {
     public static OrderTO toTransportObject(final Order order) {
         return new OrderTO(
@@ -29,5 +33,9 @@ public class OrderMapper {
                 AuthorizationRequestMapper.toTransportObjects(order.getIdentifiers()),
                 order.getCertificateChain()
         );
+    }
+
+    public static List<OrderTO> toTransportObjects(final List<Order> orders) {
+        return orders.stream().map(OrderMapper::toTransportObject).collect(toList());
     }
 }

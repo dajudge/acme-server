@@ -17,23 +17,18 @@
 
 package com.dajudge.acme.server.util;
 
-import com.dajudge.acme.server.adapter.AppConfigAdapter;
+import com.dajudge.acme.server.web.util.PathBuilder;
 import io.quarkus.arc.AlternativePriority;
 import io.restassured.RestAssured;
 
-import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
+import javax.inject.Singleton;
 
+@Singleton
 public class TestConfigAdapter {
     @Produces
     @AlternativePriority(1)
-    @Dependent
-    public AppConfigAdapter configFacade() {
-        return new AppConfigAdapter() {
-            @Override
-            public String getServerBaseUrl() {
-                return "http://localhost:" + RestAssured.port;
-            }
-        };
+    public PathBuilder.Config getPathBuilderConfig() {
+        return () -> "http://localhost:" + RestAssured.port;
     }
 }

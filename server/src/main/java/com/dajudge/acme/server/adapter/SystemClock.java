@@ -17,7 +17,7 @@
 
 package com.dajudge.acme.server.adapter;
 
-import com.dajudge.acme.ca.Clock;
+import com.dajudge.acme.common.Clock;
 
 import javax.inject.Singleton;
 

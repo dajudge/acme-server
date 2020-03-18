@@ -1,0 +1,8 @@
+dependencies {
+    implementation project(":challenge-api")
+    implementation project(":common-api")
+    implementation "jakarta.enterprise:jakarta.enterprise.cdi-api"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
+    implementation "org.slf4j:slf4j-api"
+    implementation 'com.squareup.okhttp3:okhttp:4.4.1'
+}

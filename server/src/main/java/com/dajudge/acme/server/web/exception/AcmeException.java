@@ -17,10 +17,47 @@
 
 package com.dajudge.acme.server.web.exception;
 
-import javax.ws.rs.WebApplicationException;
+import lombok.ToString;
+
 import javax.ws.rs.core.Response;
 
-abstract class AcmeException extends WebApplicationException {
+public abstract class AcmeException extends RuntimeException {
+    private final Response response;
+
+    private AcmeException(final String message, final Throwable cause, final Response response) {
+        super(message, cause);
+        this.response = response;
+    }
+
+    private AcmeException(final String message, final Response response) {
+        super(message);
+        this.response = response;
+    }
+
+    AcmeException(final String message, final String type, final int status) {
+        this(message, response(type, message, status));
+    }
+
+    AcmeException(final String message, final String type, final int status, final Throwable cause) {
+        this(message, cause, response(type, message, status));
+    }
+
+    private static Response response(final String type, final String detail, final int status) {
+        return Response.status(status)
+                .entity(new ProblemDocument(
+                        "urn:ietf:params:acme:error:" + type,
+                        detail,
+                        status
+                ))
+                .type("application/problem+json")
+                .build();
+    }
+
+    public Response getResponse() {
+        return response;
+    }
+
+    @ToString
     public static final class ProblemDocument {
         private final String type;
         private final String detail;
@@ -45,22 +82,6 @@ abstract class AcmeException extends WebApplicationException {
         }
     }
 
-    protected AcmeException(final String message, final String type, final int status) {
-        super(message, response(type, message, status));
-    }
-
-    protected AcmeException(final String message, final String type, final int status, final Throwable cause) {
-        super(message, cause, response(type, message, status));
-    }
-
-    private static Response response(final String type, final String detail, final int status) {
-        return Response.status(status)
-                .entity(new ProblemDocument(
-                        "urn:ietf:params:acme:error:" + type,
-                        detail,
-                        status
-                ))
-                .type("application/problem+json")
-                .build();
-    }
 }
+
+

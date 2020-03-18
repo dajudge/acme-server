@@ -18,9 +18,9 @@
 package com.dajudge.acme.server.web.provider.jws;
 
 import com.dajudge.acme.server.facade.NonceFacade;
-import com.dajudge.acme.server.web.exception.BadNonceException;
 import com.dajudge.acme.server.web.transport.JwsProtectedPartRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
+import com.dajudge.acme.server.web.util.PathBuilder;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,7 +40,11 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import static com.dajudge.acme.server.web.exception.BadNonceException.badNonce;
+import static com.dajudge.acme.server.web.exception.UnauthorizedException.noKeyIdProvided;
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
@@ -52,6 +56,8 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
 
     @Inject
     NonceFacade nonceFacade;
+    @Inject
+    PathBuilder pathBuilder;
 
     @Override
     public boolean isReadable(
@@ -95,20 +101,27 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
                     Base64.decode(jws.getProtected()),
                     JwsProtectedPartRTO.class
             );
+            LOG.info("Protected part: {}", jwsProtectedPart);
             if (!nonceFacade.validate(jwsProtectedPart.getNonce())) {
-                throw new BadNonceException(jwsProtectedPart.getNonce());
+                throw badNonce(jwsProtectedPart.getNonce());
+            }
+            final Optional<String> accountId = pathBuilder.accountIdFromKey(jwsProtectedPart);
+            if (!allowWithoutKeyId(annotations) && !accountId.isPresent()) {
+                throw noKeyIdProvided();
             }
             if (payloadClass == Void.class) {
                 return createRequestObject(
                         jwsProtectedPart,
-                        jws.getSignature()
+                        jws.getSignature(),
+                        accountId.orElse(null)
                 );
             }
             return createRequestObject(
                     jwsProtectedPart,
                     payloadClass,
                     Base64.decode(jws.getPayload()),
-                    jws.getSignature()
+                    jws.getSignature(),
+                    accountId.orElse(null)
             );
         } catch (final JsonParseException | JsonMappingException e) {
             throw new WebApplicationException("Failed to deserialize JWS request body", e, BAD_REQUEST);
@@ -117,16 +130,24 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
 
     private JwsRequestRTO createRequestObject(
             final JwsProtectedPartRTO protectedPart,
-            final String signature
+            final String signature,
+            final String accountId
     ) {
-        return JwsRequestRTO.create(protectedPart, Void.class, null, signature);
+        return JwsRequestRTO.create(
+                protectedPart,
+                Void.class,
+                null,
+                signature,
+                accountId
+        );
     }
 
     private <T> JwsRequestRTO<T> createRequestObject(
             final JwsProtectedPartRTO protectedPart,
             final Class<T> payloadClass,
             final byte[] payloadJson,
-            final String signature
+            final String signature,
+            final String accountId
     ) throws IOException {
         return JwsRequestRTO.create(
                 protectedPart,
@@ -135,7 +156,13 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
                         payloadJson,
                         payloadClass
                 ),
-                signature
+                signature,
+                accountId
         );
+    }
+
+    private boolean allowWithoutKeyId(final Annotation[] annotations) {
+        return annotations != null &&
+                Stream.of(annotations).anyMatch(a -> a.annotationType() == AllowWithoutKeyId.class);
     }
 }

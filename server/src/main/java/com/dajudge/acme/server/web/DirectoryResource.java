@@ -17,8 +17,9 @@
 
 package com.dajudge.acme.server.web;
 
-import com.dajudge.acme.server.facade.ConfigFacade;
 import com.dajudge.acme.server.web.transport.DirectoryResponseRTO;
+import com.dajudge.acme.server.web.util.PathBuilder;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -27,22 +28,23 @@ import javax.ws.rs.Produces;
 
 @Path(DirectoryResource.BASE_PATH)
 public class DirectoryResource {
+    @ConfigProperty
     static final String BASE_PATH = "/directory";
 
-    private final ConfigFacade configFacade;
+    private final PathBuilder pathBuilder;
 
     @Inject
-    public DirectoryResource(final ConfigFacade configFacade) {
-        this.configFacade = configFacade;
+    public DirectoryResource(final PathBuilder pathBuilder) {
+        this.pathBuilder = pathBuilder;
     }
 
     @GET
     @Produces("application/json")
     public DirectoryResponseRTO getDirectory() {
         return new DirectoryResponseRTO(
-                configFacade.getServerBaseUrl() + NewNonceResource.BASE_PATH,
-                configFacade.getServerBaseUrl() + NewAccountResource.BASE_PATH,
-                configFacade.getServerBaseUrl() + NewOrderResource.BASE_PATH,
+                pathBuilder.getServerBaseUrl() + NewNonceResource.BASE_PATH,
+                pathBuilder.getServerBaseUrl() + NewAccountResource.BASE_PATH,
+                pathBuilder.getServerBaseUrl() + NewOrderResource.BASE_PATH,
                 "n/a",
                 "n/a",
                 "n/a"

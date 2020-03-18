@@ -40,6 +40,10 @@ public class AccountTO {
         this.publicKey = publicKey;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public Map<String, Object> getPublicKey() {
         return publicKey;
     }
@@ -48,7 +52,4 @@ public class AccountTO {
         return contact;
     }
 
-    public String getId() {
-        return id;
-    }
 }
