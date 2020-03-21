@@ -17,8 +17,8 @@
 
 package com.dajudge.acme.server.web.mapper;
 
-import com.dajudge.acme.server.transport.AuthorizationRequestTO;
-import com.dajudge.acme.server.transport.OrderTO;
+import com.dajudge.acme.account.facade.transport.AuthorizationRequestTO;
+import com.dajudge.acme.account.facade.transport.OrderTO;
 import com.dajudge.acme.server.web.transport.OrderRTO;
 import com.dajudge.acme.server.web.transport.OrderRequestIdentifierRTO;
 import com.dajudge.acme.server.web.util.PathBuilder;

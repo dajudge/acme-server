@@ -17,11 +17,10 @@
 
 package com.dajudge.acme.server.web;
 
-import com.dajudge.acme.server.facade.OrderFacade;
-import com.dajudge.acme.server.transport.OrderTO;
+import com.dajudge.acme.account.facade.OrderFacade;
+import com.dajudge.acme.account.facade.transport.OrderTO;
 import com.dajudge.acme.server.web.mapper.OrderMapper;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
-import com.dajudge.acme.server.web.util.PathBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,17 +39,14 @@ public class GetOrderResource {
     public static final String BASE_PATH = ACMEV2_PREFIX + "/order/{orderId}";
     private final OrderFacade orderFacade;
     private final OrderMapper orderMapper;
-    private final PathBuilder pathBuilder;
 
     @Inject
     public GetOrderResource(
             final OrderFacade orderFacade,
-            final OrderMapper orderMapper,
-            final PathBuilder pathBuilder
+            final OrderMapper orderMapper
     ) {
         this.orderFacade = orderFacade;
         this.orderMapper = orderMapper;
-        this.pathBuilder = pathBuilder;
     }
 
     @POST

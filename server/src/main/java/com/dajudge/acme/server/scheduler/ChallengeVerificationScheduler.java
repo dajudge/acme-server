@@ -17,7 +17,7 @@
 
 package com.dajudge.acme.server.scheduler;
 
-import com.dajudge.acme.server.facade.ChallengeVerificationFacade;
+import com.dajudge.acme.account.facade.ChallengeFacade;
 import io.quarkus.scheduler.Scheduled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,18 +28,19 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class ChallengeVerificationScheduler {
     private static final Logger LOG = LoggerFactory.getLogger(ChallengeVerificationScheduler.class);
-    private final ChallengeVerificationFacade challengeVerificationFacade;
+    private final ChallengeFacade challengeFacade;
 
     @Inject
-    public ChallengeVerificationScheduler(final ChallengeVerificationFacade challengeVerificationFacade) {
-        this.challengeVerificationFacade = challengeVerificationFacade;
+    public ChallengeVerificationScheduler(final ChallengeFacade challengeFacade) {
+        this.challengeFacade = challengeFacade;
     }
+
 
     @Scheduled(every = "1s")
     public void verifyChallenges() {
         LOG.info("Running challenge verification scheduler...");
         try {
-            challengeVerificationFacade.verifyChallenges();
+            challengeFacade.verifyChallenges();
         } catch (final Exception e) {
             LOG.info("Challenge verification error", e);
         }

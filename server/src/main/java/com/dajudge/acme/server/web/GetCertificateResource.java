@@ -17,8 +17,8 @@
 
 package com.dajudge.acme.server.web;
 
-import com.dajudge.acme.server.facade.OrderFacade;
-import com.dajudge.acme.server.transport.OrderTO;
+import com.dajudge.acme.account.facade.OrderFacade;
+import com.dajudge.acme.account.facade.transport.OrderTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
 
 import javax.inject.Inject;

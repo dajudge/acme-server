@@ -17,7 +17,7 @@
 
 package com.dajudge.acme.server.web;
 
-import com.dajudge.acme.server.facade.NonceFacade;
+import com.dajudge.acme.nonce.facade.NonceFacade;
 
 import javax.inject.Inject;
 import javax.ws.rs.HEAD;

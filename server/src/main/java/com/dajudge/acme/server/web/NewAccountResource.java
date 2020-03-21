@@ -17,8 +17,8 @@
 
 package com.dajudge.acme.server.web;
 
-import com.dajudge.acme.server.facade.AccountFacade;
-import com.dajudge.acme.server.transport.AccountTO;
+import com.dajudge.acme.account.facade.AccountFacade;
+import com.dajudge.acme.account.facade.transport.AccountTO;
 import com.dajudge.acme.server.web.provider.jws.AllowWithoutKeyId;
 import com.dajudge.acme.server.web.transport.CreateAccountRequestRTO;
 import com.dajudge.acme.server.web.transport.CreateAccountResponseRTO;

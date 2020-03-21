@@ -17,8 +17,8 @@
 
 package com.dajudge.acme.server.web;
 
-import com.dajudge.acme.server.facade.AuthorizationFacade;
-import com.dajudge.acme.server.transport.AuthorizationStatusCTO;
+import com.dajudge.acme.account.facade.AuthorizationFacade;
+import com.dajudge.acme.account.facade.transport.AuthorizationStatusCTO;
 import com.dajudge.acme.server.web.transport.AuthorizationChallengeRTO;
 import com.dajudge.acme.server.web.transport.GetAuthorizationResponseRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;

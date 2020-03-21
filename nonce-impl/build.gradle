@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(":nonce-api")
+
+    implementation "jakarta.enterprise:jakarta.enterprise.cdi-api"
+}

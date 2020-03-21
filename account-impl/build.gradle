@@ -1,0 +1,11 @@
+dependencies {
+    implementation "jakarta.enterprise:jakarta.enterprise.cdi-api"
+    implementation "org.slf4j:slf4j-api"
+    implementation 'org.bitbucket.b_c:jose4j:0.7.0'
+
+    implementation project(":account-api")
+
+    implementation project(":common-api")
+    implementation project(":challenge-api")
+    implementation project(":ca-api")
+}

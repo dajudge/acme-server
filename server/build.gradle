@@ -9,14 +9,18 @@ dependencies {
     implementation 'io.quarkus:quarkus-resteasy-jsonb'
     implementation 'io.quarkus:quarkus-scheduler'
     implementation 'org.projectlombok:lombok:1.18.12'
-    implementation project(":ca-api")
-    implementation project(":common-api")
-    implementation project(":challenge-api")
-
-    runtimeOnly project(":ca-builtin")
-    runtimeOnly project(":challenge-http")
 
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    implementation project(":common-api")
+    implementation project(":account-api")
+    implementation project(":nonce-api")
+
+    // FIXME those should be runtimeOnly, but quarkus seems to dislike that?
+    implementation project(":ca-builtin")
+    implementation project(":account-impl")
+    implementation project(":nonce-impl")
+    implementation project(":challenge-http")
 
     testImplementation 'io.rest-assured:rest-assured'
     testImplementation 'io.quarkus:quarkus-junit5'

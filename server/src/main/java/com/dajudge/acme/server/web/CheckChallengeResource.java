@@ -17,8 +17,8 @@
 
 package com.dajudge.acme.server.web;
 
-import com.dajudge.acme.server.facade.ChallengeFacade;
-import com.dajudge.acme.server.transport.ChallengeStatusCTO;
+import com.dajudge.acme.account.facade.ChallengeFacade;
+import com.dajudge.acme.account.facade.transport.ChallengeStatusCTO;
 import com.dajudge.acme.server.web.transport.CheckChallengeResponseRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
 import com.dajudge.acme.server.web.util.PathBuilder;

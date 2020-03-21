@@ -17,9 +17,9 @@
 
 package com.dajudge.acme.server.web.provider.jws;
 
-import com.dajudge.acme.server.facade.AccountFacade;
-import com.dajudge.acme.server.facade.NonceFacade;
-import com.dajudge.acme.server.transport.AccountTO;
+import com.dajudge.acme.account.facade.AccountFacade;
+import com.dajudge.acme.account.facade.transport.AccountTO;
+import com.dajudge.acme.nonce.facade.NonceFacade;
 import com.dajudge.acme.server.web.transport.JwsProtectedPartRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
 import com.dajudge.acme.server.web.util.PathBuilder;
@@ -28,10 +28,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.jose4j.base64url.Base64;
-import org.jose4j.base64url.Base64Url;
-import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +133,7 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
                         jwsPayload.getSignature()
                 ));
                 jws.setKey(newJwk(pubkey).getKey());
-                if(!jws.verifySignature()) {
+                if (!jws.verifySignature()) {
                     throw signatureVerificationFailed();
                 }
             } else {
