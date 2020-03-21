@@ -17,7 +17,7 @@
 
 package com.dajudge.acme.server;
 
-import com.dajudge.acme.server.util.ProblemDocumentMatchers;
+import com.dajudge.acme.server.client.AcmeTestClient;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,46 +32,46 @@ import static org.hamcrest.Matchers.*;
 @QuarkusTest
 public class NonceHandlingTest {
 
-    private AcmeServer acmeServer;
+    private AcmeTestClient acmeTestClient;
     public KeyPair keyPair = generateKeyPair();
 
 
     @BeforeEach
     public void init() {
-        acmeServer = new AcmeServer();
+        acmeTestClient = new AcmeTestClient();
     }
 
     @Test
     public void returns_nonce() {
-        acmeServer.newNonce(not(emptyOrNullString()));
+        acmeTestClient.newNonce(not(emptyOrNullString()));
     }
 
     @Test
     public void returns_unique_nonces() {
-        final String firstNonce = acmeServer.newNonce();
-        acmeServer.newNonce(not(equalTo(firstNonce)));
+        final String firstNonce = acmeTestClient.newNonce();
+        acmeTestClient.newNonce(not(equalTo(firstNonce)));
     }
 
     @Test
     public void accepts_provided_nonce() {
-        acmeServer.newAccount(keyPair, accountRequestObject("mailto:test@example.com"));
+        acmeTestClient.newAccount(keyPair, accountRequestObject("mailto:test@example.com"))
+                .succeeds();
     }
 
     @Test
     public void rejects_used_nonce() {
-        final String oldNonce = acmeServer.nextNonce;
-        acmeServer.newAccount(keyPair, accountRequestObject("mailto:test1@example.com"));
-        acmeServer.nextNonce = oldNonce;
-        acmeServer.newAccountRequest(keyPair, accountRequestObject("mailto:test2@example.com"))
-                .statusCode(400)
-                .body(ProblemDocumentMatchers.isProblemDocument("urn:ietf:params:acme:error:badNonce"));
+        final String oldNonce = acmeTestClient.nextNonce;
+        acmeTestClient.newAccount(keyPair, accountRequestObject("mailto:test1@example.com"))
+                .succeeds();
+        acmeTestClient.nextNonce = oldNonce;
+        acmeTestClient.newAccount(keyPair, accountRequestObject("mailto:test2@example.com"))
+                .failsWith(400, "urn:ietf:params:acme:error:badNonce");
     }
 
     @Test
     public void rejects_unknown_nonce() {
-        acmeServer.nextNonce = UUID.randomUUID().toString();
-        acmeServer.newAccountRequest(keyPair, accountRequestObject("mailto:test4@example.com"))
-                .statusCode(400)
-                .body(ProblemDocumentMatchers.isProblemDocument("urn:ietf:params:acme:error:badNonce"));
+        acmeTestClient.nextNonce = UUID.randomUUID().toString();
+        acmeTestClient.newAccount(keyPair, accountRequestObject("mailto:test4@example.com"))
+                .failsWith(400, "urn:ietf:params:acme:error:badNonce");
     }
 }

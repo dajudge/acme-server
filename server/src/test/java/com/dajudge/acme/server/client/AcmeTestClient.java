@@ -15,11 +15,8 @@
  *
  */
 
-package com.dajudge.acme.server;
+package com.dajudge.acme.server.client;
 
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
 import org.hamcrest.Matcher;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
@@ -33,11 +30,10 @@ import java.security.KeyPair;
 import static io.restassured.RestAssured.given;
 import static java.util.function.Function.identity;
 import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.jose4j.jws.AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
 import static org.jose4j.jwx.CompactSerializer.deserialize;
 
-class AcmeServer {
+public class AcmeTestClient {
     public String nextNonce = newNonce();
 
     public String newNonce() {
@@ -46,7 +42,6 @@ class AcmeServer {
 
     public String newNonce(final Matcher<String> matcher) {
         final String newNonceUrl = newNonceUrl();
-        System.out.println(newNonceUrl);
         return given()
                 .head(newNonceUrl)
                 .then()
@@ -55,30 +50,17 @@ class AcmeServer {
                 .header("Replay-Nonce");
     }
 
-    public JSONObject newAccount(final KeyPair keyPair, final JSONObject body) {
-        return processResponse(
-                newAccountRequest(keyPair, body)
-                        .header("Location", notNullValue()),
-                201);
-    }
-
-    private JSONObject processResponse(final ValidatableResponse result, final int statusCode) {
-        result.statusCode(statusCode)
-                .header("Replay-Nonce", notNullValue());
-        final ExtractableResponse<Response> extract = result.extract();
-        nextNonce = extract.header("Replay-Nonce");
-        final JSONObject resultObject = new JSONObject(extract.body().asString());
-        resultObject.put("_location", extract.header("Location"));
-        return resultObject;
-    }
-
-    public ValidatableResponse newAccountRequest(final KeyPair keyPair, final JSONObject body) {
+    public NewAccountRequest newAccount(final KeyPair keyPair, final JSONObject body) {
         final String url = newAccountUrl();
-        return given()
+        return new NewAccountRequest(given()
                 .body(jws(keyPair, url, null, body.toString()))
                 .contentType("application/jose+json")
                 .post(url)
-                .then();
+                .then(), this::setNextNonce);
+    }
+
+    private void setNextNonce(final String nextNonce) {
+        this.nextNonce = nextNonce;
     }
 
     private String jws(final KeyPair keyPair, final String url, final String kid, final String body) {
@@ -152,15 +134,11 @@ class AcmeServer {
     }
 
 
-    public ValidatableResponse getOrdersRequest(final KeyPair keyPair, final String kid, final String ordersUrl) {
-        return given()
+    public GetOrdersRequest getOrders(final KeyPair keyPair, final String kid, final String ordersUrl) {
+        return new GetOrdersRequest(given()
                 .body(jws(keyPair, ordersUrl, kid, ""))
                 .contentType("application/jose+json")
                 .post(ordersUrl)
-                .then();
-    }
-
-    public JSONObject getOrders(final KeyPair keyPair, final String kid, final String ordersUrl) {
-        return processResponse(getOrdersRequest(keyPair, kid, ordersUrl), 200);
+                .then(), this::setNextNonce);
     }
 }
