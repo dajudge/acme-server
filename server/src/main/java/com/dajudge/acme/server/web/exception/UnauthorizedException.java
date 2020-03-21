@@ -9,6 +9,10 @@ public class UnauthorizedException extends AcmeException {
         return new UnauthorizedException("No JWS Key ID provided");
     }
 
+    public static UnauthorizedException signatureVerificationFailed() {
+        return new UnauthorizedException("Signature verification failed");
+    }
+
     public static UnauthorizedException unknownKeyId(final String kid) {
         return new UnauthorizedException("Unknown Key ID: " + kid);
     }

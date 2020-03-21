@@ -21,20 +21,21 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import org.hamcrest.Matcher;
-import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.Headers;
 import org.jose4j.lang.JoseException;
 import org.json.JSONObject;
 
+import java.security.Key;
 import java.security.KeyPair;
 
-import static com.dajudge.acme.common.util.StringUtils.base64url;
 import static io.restassured.RestAssured.given;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.function.Function.identity;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.jose4j.jws.AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
+import static org.jose4j.jwx.CompactSerializer.deserialize;
 
 class AcmeServer {
     public String nextNonce = newNonce();
@@ -82,23 +83,52 @@ class AcmeServer {
 
     private String jws(final KeyPair keyPair, final String url, final String kid, final String body) {
         try {
-            final JsonWebSignature jws = new JsonWebSignature();
-            jws.setPayload(body);
-            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
-            jws.setKey(keyPair.getPrivate());
+            final JsonWebSignature jws = createSignature(keyPair, url, kid, body);
+            final String[] encodedParts = deserialize(jws.getCompactSerialization());
             final JSONObject jwsObject = new JSONObject();
-            jws.sign();
-            jws.setKey(keyPair.getPublic());
-            jwsObject.put("payload", base64url(jws.getPayload().getBytes(UTF_8)));
-            jwsObject.put("signature", jws.getEncodedSignature());
-            final JSONObject headers = toJson(jws.getHeaders());
-            headers.put("kid", kid);
-            headers.put("nonce", nextNonce);
-            headers.put("url", url);
-            jwsObject.put("protected", base64url(headers.toString().getBytes(UTF_8)));
+            jwsObject.put("protected", encodedParts[0]);
+            jwsObject.put("payload", encodedParts[1]);
+            jwsObject.put("signature", encodedParts[2]);
             return jwsObject.toString();
         } catch (final JoseException e) {
             throw new RuntimeException("Failed to encapsulate message as JWS", e);
+        }
+    }
+
+    private JsonWebSignature createSignature(
+            final KeyPair keyPair,
+            final String url,
+            final String kid,
+            final String body
+    ) throws JoseException {
+        final JsonWebSignature jws = new JsonWebSignature();
+        jws.setPayload(body);
+        jws.setAlgorithmHeaderValue(ECDSA_USING_P256_CURVE_AND_SHA256);
+        jws.setKey(keyPair.getPrivate());
+        jws.getHeaders().setFullHeaderAsJsonString(headerAsJson(keyPair, url, kid, jws).toString());
+        jws.sign();
+        return jws;
+    }
+
+    private JSONObject headerAsJson(
+            final KeyPair keyPair,
+            final String url,
+            final String kid,
+            final JsonWebSignature jws
+    ) {
+        final JSONObject headers = toJson(jws.getHeaders());
+        headers.put("kid", kid);
+        headers.put("jwk", kid != null ? null : jwk(keyPair.getPublic()));
+        headers.put("nonce", nextNonce);
+        headers.put("url", url);
+        return headers;
+    }
+
+    private JSONObject jwk(final Key key) {
+        try {
+            return new JSONObject(JsonWebKey.Factory.newJwk(key).toJson());
+        } catch (final JoseException e) {
+            throw new RuntimeException("Failed to create serialized JWK from key");
         }
     }
 

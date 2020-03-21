@@ -44,7 +44,7 @@ public class AccountAccessTest {
         final String kid = account.getString("_location");
         final KeyPair keyPairB = generateKeyPair();
         acmeServer.getOrdersRequest(keyPairB, kid, account.getString("orders"))
-                .statusCode(404);
+                .statusCode(401);
     }
 
     @Test

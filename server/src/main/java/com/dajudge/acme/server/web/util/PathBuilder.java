@@ -35,8 +35,7 @@ public class PathBuilder {
     public static final String ACMEV2_PREFIX = "/acmev2";
     private final Config config;
 
-    public Optional<String> accountIdFromKey(final JwsProtectedPartRTO protectedPart) {
-        final String kid = protectedPart.getKid();
+    public  Optional<String> accountIdFromKey(final String kid) {
         if (kid == null) {
             return Optional.empty();
         }

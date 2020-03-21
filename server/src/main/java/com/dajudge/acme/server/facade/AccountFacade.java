@@ -26,8 +26,8 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 
 @Dependent
 public class AccountFacade {
@@ -42,6 +42,8 @@ public class AccountFacade {
             final List<String> contact,
             final Map<String, Object> publicKey
     ) {
+        assert contact != null && !contact.isEmpty();
+        assert publicKey != null;
         final Account account = new Account();
         account.setId(UUID.randomUUID().toString());
         account.setContact(contact);
@@ -50,4 +52,10 @@ public class AccountFacade {
         return AccountMapper.toTransportObject(account);
     }
 
+    public Optional<AccountTO> findById(final String accountId) {
+        return centralRepository.getAccounts().stream()
+                .filter(it -> accountId.equals(it.getId()))
+                .findAny()
+                .map(AccountMapper::toTransportObject);
+    }
 }

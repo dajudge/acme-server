@@ -56,6 +56,7 @@ public class NewAccountResource {
     @Produces("application/json")
     public Response createAccount(final @AllowWithoutKeyId JwsRequestRTO<CreateAccountRequestRTO> request) {
         LOG.info("New account request: {}", request.getPayload());
+        LOG.info("Protected part: {}", request.getProtectedPart());
         final AccountTO account = accountFacade.createAccount(
                 request.getPayload().getContact(),
                 request.getProtectedPart().getJwk()

@@ -17,7 +17,9 @@
 
 package com.dajudge.acme.server.web.provider.jws;
 
+import com.dajudge.acme.server.facade.AccountFacade;
 import com.dajudge.acme.server.facade.NonceFacade;
+import com.dajudge.acme.server.transport.AccountTO;
 import com.dajudge.acme.server.web.transport.JwsProtectedPartRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
 import com.dajudge.acme.server.web.util.PathBuilder;
@@ -26,6 +28,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.jose4j.base64url.Base64;
+import org.jose4j.base64url.Base64Url;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwx.CompactSerializer;
+import org.jose4j.lang.JoseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,13 +47,17 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.dajudge.acme.server.web.exception.BadNonceException.badNonce;
-import static com.dajudge.acme.server.web.exception.UnauthorizedException.noKeyIdProvided;
+import static com.dajudge.acme.server.web.exception.MalformedRequestException.noJsonWebKeyOrKeyIdentifier;
+import static com.dajudge.acme.server.web.exception.UnauthorizedException.*;
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static org.jose4j.jwk.JsonWebKey.Factory.newJwk;
+import static org.jose4j.jwx.CompactSerializer.serialize;
 
 @Provider
 public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
@@ -58,6 +69,8 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
     NonceFacade nonceFacade;
     @Inject
     PathBuilder pathBuilder;
+    @Inject
+    AccountFacade accountFacade;
 
     @Override
     public boolean isReadable(
@@ -93,37 +106,59 @@ public class JwsMessageBodyReader implements MessageBodyReader<JwsRequestRTO> {
             final ParameterizedType parameterizedType = (ParameterizedType) genericType;
             final Class<?> payloadClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
             final byte[] payloadBytes = IOUtils.toByteArray(entityStream);
-            final JwsPayload jws = JSON_MAPPER.readValue(
+            final JwsPayload jwsPayload = JSON_MAPPER.readValue(
                     payloadBytes,
                     JwsPayload.class
             );
             final JwsProtectedPartRTO jwsProtectedPart = JSON_MAPPER.readValue(
-                    Base64.decode(jws.getProtected()),
+                    Base64.decode(jwsPayload.getProtected()),
                     JwsProtectedPartRTO.class
             );
             LOG.info("Protected part: {}", jwsProtectedPart);
             if (!nonceFacade.validate(jwsProtectedPart.getNonce())) {
                 throw badNonce(jwsProtectedPart.getNonce());
             }
-            final Optional<String> accountId = pathBuilder.accountIdFromKey(jwsProtectedPart);
-            if (!allowWithoutKeyId(annotations) && !accountId.isPresent()) {
-                throw noKeyIdProvided();
+            if (jwsProtectedPart.getKid() == null && jwsProtectedPart.getJwk() == null) {
+                throw noJsonWebKeyOrKeyIdentifier();
+            }
+            final Optional<String> accountId = pathBuilder.accountIdFromKey(jwsProtectedPart.getKid());
+            if (accountId.isPresent()) {
+                final Optional<AccountTO> account = accountFacade.findById(accountId.get());
+                if (!account.isPresent()) {
+                    throw unknownKeyId(jwsProtectedPart.getKid());
+                }
+                final Map<String, Object> pubkey = account.get().getPublicKey();
+                LOG.info("Public key for {}: {}", jwsProtectedPart.getKid(), pubkey);
+                final JsonWebSignature jws = new JsonWebSignature();
+                jws.setCompactSerialization(serialize(
+                        jwsPayload.getProtected(),
+                        jwsPayload.getPayload(),
+                        jwsPayload.getSignature()
+                ));
+                jws.setKey(newJwk(pubkey).getKey());
+                if(!jws.verifySignature()) {
+                    throw signatureVerificationFailed();
+                }
+            } else {
+                if (!allowWithoutKeyId(annotations)) {
+                    throw noKeyIdProvided();
+                }
             }
             if (payloadClass == Void.class) {
                 return createRequestObject(
                         jwsProtectedPart,
-                        jws.getSignature(),
+                        jwsPayload.getSignature(),
                         accountId.orElse(null)
                 );
             }
             return createRequestObject(
                     jwsProtectedPart,
                     payloadClass,
-                    Base64.decode(jws.getPayload()),
-                    jws.getSignature(),
+                    Base64.decode(jwsPayload.getPayload()),
+                    jwsPayload.getSignature(),
                     accountId.orElse(null)
             );
-        } catch (final JsonParseException | JsonMappingException e) {
+        } catch (final JsonParseException | JsonMappingException | JoseException e) {
             throw new WebApplicationException("Failed to deserialize JWS request body", e, BAD_REQUEST);
         }
     }
