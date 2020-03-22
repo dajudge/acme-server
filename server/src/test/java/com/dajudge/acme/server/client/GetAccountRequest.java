@@ -22,10 +22,8 @@ import org.json.JSONObject;
 
 import java.util.function.Consumer;
 
-import static org.hamcrest.Matchers.notNullValue;
-
-public class NewAccountRequest extends BasePostRequest {
-    public NewAccountRequest(
+public class GetAccountRequest extends BasePostRequest {
+    public GetAccountRequest(
             final ValidatableResponse validatableResponse,
             final Consumer<String> nextNonceConsumer
     ) {
@@ -33,6 +31,6 @@ public class NewAccountRequest extends BasePostRequest {
     }
 
     public JSONObject succeeds() {
-        return super.succeeds(r -> r.statusCode(201).header("Location", notNullValue()));
+        return super.succeeds(r -> r.statusCode(200));
     }
 }

@@ -17,6 +17,7 @@
 
 package com.dajudge.acme.server.client;
 
+import io.restassured.response.Response;
 import org.hamcrest.Matcher;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
@@ -50,14 +51,41 @@ public class AcmeTestClient {
                 .header("Replay-Nonce");
     }
 
-    public NewAccountRequest newAccount(final KeyPair keyPair, final JSONObject body) {
+    public CreateAccountRequest newAccount(final KeyPair keyPair, final JSONObject body) {
         final String url = newAccountUrl();
-        return new NewAccountRequest(given()
-                .body(jws(keyPair, url, null, body.toString()))
-                .contentType("application/jose+json")
-                .post(url)
+        return new CreateAccountRequest(request(keyPair, null, url, body.toString())
                 .then(), this::setNextNonce);
     }
+
+    public GetOrdersRequest getOrders(final KeyPair keyPair, final String kid, final String ordersUrl) {
+        return new GetOrdersRequest(
+                getAsPost(keyPair, kid, ordersUrl).then(),
+                this::setNextNonce
+        );
+    }
+
+    public GetAccountRequest getAccount(final KeyPair keyPair, final String kid) {
+        return new GetAccountRequest(
+                getAsPost(keyPair, kid, kid).then(),
+                this::setNextNonce
+        );
+    }
+
+    private Response getAsPost(final KeyPair keyPair, final String kid, final String url) {
+        return request(keyPair, kid, url, "");
+    }
+
+    private Response request(final KeyPair keyPair, final String kid, final String url, final String payload) {
+        return given()
+                .body(jws(keyPair, url, kid, payload))
+                .contentType("application/jose+json")
+                .post(url);
+    }
+
+    private static JSONObject toJson(final Headers headers) {
+        return new JSONObject(headers.getFullHeaderAsJsonString());
+    }
+
 
     private void setNextNonce(final String nextNonce) {
         this.nextNonce = nextNonce;
@@ -127,18 +155,5 @@ public class AcmeTestClient {
                 .then().statusCode(200)
                 .and().contentType("application/json")
                 .extract().body().jsonPath().get(urlName);
-    }
-
-    private static JSONObject toJson(final Headers headers) {
-        return new JSONObject(headers.getFullHeaderAsJsonString());
-    }
-
-
-    public GetOrdersRequest getOrders(final KeyPair keyPair, final String kid, final String ordersUrl) {
-        return new GetOrdersRequest(given()
-                .body(jws(keyPair, ordersUrl, kid, ""))
-                .contentType("application/jose+json")
-                .post(ordersUrl)
-                .then(), this::setNextNonce);
     }
 }

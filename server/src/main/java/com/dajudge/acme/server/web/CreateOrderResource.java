@@ -38,9 +38,9 @@ import java.util.List;
 import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
 import static java.util.stream.Collectors.toList;
 
-@Path(NewOrderResource.BASE_PATH)
-public class NewOrderResource {
-    private static final Logger LOG = LoggerFactory.getLogger(NewOrderResource.class);
+@Path(CreateOrderResource.BASE_PATH)
+public class CreateOrderResource {
+    private static final Logger LOG = LoggerFactory.getLogger(CreateOrderResource.class);
     static final String BASE_PATH = ACMEV2_PREFIX + "/orders";
 
     private final OrderMapper orderMapper;
@@ -48,7 +48,7 @@ public class NewOrderResource {
     private final PathBuilder pathBuilder;
 
     @Inject
-    public NewOrderResource(
+    public CreateOrderResource(
             final OrderMapper orderMapper,
             final OrderFacade orderFacade,
             final PathBuilder pathBuilder

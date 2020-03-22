@@ -17,6 +17,7 @@
 
 package com.dajudge.acme.server.web.transport;
 
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -25,11 +26,21 @@ import java.util.Map;
 
 @ToString
 @EqualsAndHashCode
-public class CreateAccountRequestRTO {
+public class AccountRTO {
+    private String status;
     private List<String> contact;
+    private String orders;
     private Boolean termsOfServiceAgreed;
     private Boolean onlyReturnExisting;
     private Map<String, Object> externalAccountBinding;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(final String status) {
+        this.status = status;
+    }
 
     public List<String> getContact() {
         return contact;
@@ -37,6 +48,14 @@ public class CreateAccountRequestRTO {
 
     public void setContact(final List<String> contact) {
         this.contact = contact;
+    }
+
+    public String getOrders() {
+        return orders;
+    }
+
+    public void setOrders(final String orders) {
+        this.orders = orders;
     }
 
     public Boolean getTermsOfServiceAgreed() {

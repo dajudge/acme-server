@@ -42,9 +42,9 @@ public class DirectoryResource {
     @Produces("application/json")
     public DirectoryResponseRTO getDirectory() {
         return new DirectoryResponseRTO(
-                pathBuilder.getServerBaseUrl() + NewNonceResource.BASE_PATH,
-                pathBuilder.getServerBaseUrl() + NewAccountResource.BASE_PATH,
-                pathBuilder.getServerBaseUrl() + NewOrderResource.BASE_PATH,
+                pathBuilder.getServerBaseUrl() + CreateNonceResource.BASE_PATH,
+                pathBuilder.getServerBaseUrl() + CreateAccountResource.BASE_PATH,
+                pathBuilder.getServerBaseUrl() + CreateOrderResource.BASE_PATH,
                 "n/a",
                 "n/a",
                 "n/a"

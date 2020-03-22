@@ -19,9 +19,9 @@ package com.dajudge.acme.server.web;
 
 import com.dajudge.acme.account.facade.AccountFacade;
 import com.dajudge.acme.account.facade.transport.AccountTO;
+import com.dajudge.acme.server.web.mapper.AccountMapper;
 import com.dajudge.acme.server.web.provider.jws.AllowWithoutKeyId;
-import com.dajudge.acme.server.web.transport.CreateAccountRequestRTO;
-import com.dajudge.acme.server.web.transport.CreateAccountResponseRTO;
+import com.dajudge.acme.server.web.transport.AccountRTO;
 import com.dajudge.acme.server.web.transport.JwsRequestRTO;
 import com.dajudge.acme.server.web.util.PathBuilder;
 import org.slf4j.Logger;
@@ -35,39 +35,37 @@ import javax.ws.rs.core.Response;
 
 import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
 
-@Path(NewAccountResource.BASE_PATH)
-public class NewAccountResource {
-    private static final Logger LOG = LoggerFactory.getLogger(NewAccountResource.class);
+@Path(CreateAccountResource.BASE_PATH)
+public class CreateAccountResource {
+    private static final Logger LOG = LoggerFactory.getLogger(CreateAccountResource.class);
     static final String BASE_PATH = ACMEV2_PREFIX + "/account";
 
     private final AccountFacade accountFacade;
     private final PathBuilder pathBuilder;
+    private final AccountMapper accountMapper;
 
     @Inject
-    public NewAccountResource(
+    public CreateAccountResource(
             final AccountFacade accountFacade,
-            final PathBuilder pathBuilder
+            final PathBuilder pathBuilder,
+            final AccountMapper accountMapper
     ) {
         this.accountFacade = accountFacade;
         this.pathBuilder = pathBuilder;
+        this.accountMapper = accountMapper;
     }
 
     @POST
     @Produces("application/json")
-    public Response createAccount(final @AllowWithoutKeyId JwsRequestRTO<CreateAccountRequestRTO> request) {
+    public Response createAccount(final @AllowWithoutKeyId JwsRequestRTO<AccountRTO> request) {
         LOG.info("New account request: {}", request.getPayload());
         LOG.info("Protected part: {}", request.getProtectedPart());
         final AccountTO account = accountFacade.createAccount(
                 request.getPayload().getContact(),
                 request.getProtectedPart().getJwk()
         );
-        final CreateAccountResponseRTO response = new CreateAccountResponseRTO(
-                "valid",
-                account.getContact(),
-                pathBuilder.accountOrdersUrl(account.getId()).toString()
-        );
         return Response.created(pathBuilder.accountUrl(account.getId()))
-                .entity(response)
+                .entity(accountMapper.toTransportObject(account))
                 .build();
     }
 }

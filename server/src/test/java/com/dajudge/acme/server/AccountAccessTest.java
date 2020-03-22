@@ -44,7 +44,7 @@ public class AccountAccessTest {
                 .succeeds();
         final String kid = account.getString("_location");
         final KeyPair keyPairB = generateKeyPair();
-        acmeTestClient.getOrders(keyPairB, kid, account.getString("orders"))
+        acmeTestClient.getAccount(keyPairB, kid)
                 .failsWith(401, "urn:ietf:params:acme:error:unauthorized");
     }
 
@@ -54,7 +54,7 @@ public class AccountAccessTest {
         final JSONObject account = acmeTestClient.newAccount(keyPair, accountRequestObject("test@example.com"))
                 .succeeds();
         final String kid = account.getString("_location");
-        acmeTestClient.getOrders(keyPair, kid, account.getString("orders"))
+        acmeTestClient.getAccount(keyPair, kid)
                 .succeeds();
     }
 }

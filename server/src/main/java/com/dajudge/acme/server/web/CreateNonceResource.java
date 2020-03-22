@@ -27,14 +27,14 @@ import javax.ws.rs.core.Response;
 import static com.dajudge.acme.server.web.util.PathBuilder.ACMEV2_PREFIX;
 
 
-@Path(NewNonceResource.BASE_PATH)
-public class NewNonceResource {
+@Path(CreateNonceResource.BASE_PATH)
+public class CreateNonceResource {
     static final String BASE_PATH = ACMEV2_PREFIX + "/nonce";
 
     private final NonceFacade nonceFacade;
 
     @Inject
-    public NewNonceResource(final NonceFacade nonceFacade) {
+    public CreateNonceResource(final NonceFacade nonceFacade) {
         this.nonceFacade = nonceFacade;
     }
 
